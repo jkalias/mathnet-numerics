@@ -1,4 +1,4 @@
-﻿// <copyright file="FiniteDifferenceCoefficients.cs" company="Math.NET">
+﻿// <copyright file="ContinuouslyDifferentiable.cs" company="Math.NET">
 // Math.NET Numerics, part of the Math.NET Project
 // http://numerics.mathdotnet.com
 // http://github.com/mathnet/mathnet-numerics
@@ -27,8 +27,13 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 // </copyright>
 
+using System;
+
 namespace MathNet.Numerics.Differentiation
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public abstract class ContinuouslyDifferentiable
     {
         public abstract double Value(double x);
@@ -45,9 +50,24 @@ namespace MathNet.Numerics.Differentiation
             return new ContinuouslyDifferentiableSubtraction(f, g);
         }
 
+        public static ContinuouslyDifferentiable operator -(ContinuouslyDifferentiable f)
+        {
+            return -1 * f;
+        }
+
         public static ContinuouslyDifferentiable operator * (ContinuouslyDifferentiable f, ContinuouslyDifferentiable g)
         {
             return new ContinuouslyDifferentiableMultiplication(f, g);
+        }
+
+        public static ContinuouslyDifferentiable operator *(ContinuouslyDifferentiable f, double a)
+        {
+            return new ContinuouslyDifferentiableScalarMultiplication(f, a);
+        }
+
+        public static ContinuouslyDifferentiable operator *(double a, ContinuouslyDifferentiable f)
+        {
+            return f * a;
         }
 
         public static ContinuouslyDifferentiable operator / (ContinuouslyDifferentiable f, ContinuouslyDifferentiable g)
@@ -55,7 +75,41 @@ namespace MathNet.Numerics.Differentiation
             return new ContinuouslyDifferentiableDivision(f, g);
         }
 
+        public static ContinuouslyDifferentiable operator ^(ContinuouslyDifferentiable f, double r)
+        {
+            return new ContinuouslyDifferentiableExponentiation(f, r);
+        }
+
+        public static ContinuouslyDifferentiable operator ^(ContinuouslyDifferentiable f, ContinuouslyDifferentiable g)
+        {
+            return new ContinuouslyDifferentiablePowerRule(f, g);
+        }
+
         public ContinuouslyDifferentiable this[ContinuouslyDifferentiable g] => new ContinuouslyDifferentiableComposition(this, g);
+
+        private class ContinuouslyDifferentiableScalarMultiplication : ContinuouslyDifferentiable
+        {
+            private readonly ContinuouslyDifferentiable _f;
+            private readonly double _a;
+
+            public ContinuouslyDifferentiableScalarMultiplication(
+                ContinuouslyDifferentiable f,
+                double a)
+            {
+                _f = f;
+                _a = a;
+            }
+
+            public override double Derivative(double x)
+            {
+                return _a * _f.Derivative(x);
+            }
+
+            public override double Value(double x)
+            {
+                return _a * _f.Value(x);
+            }
+        }
 
         private class ContinuouslyDifferentiableAddition : ContinuouslyDifferentiable
         {
@@ -182,6 +236,55 @@ namespace MathNet.Numerics.Differentiation
             public override double Value(double x)
             {
                 return _f.Value(_g.Value(x));
+            }
+        }
+
+        private class ContinuouslyDifferentiableExponentiation : ContinuouslyDifferentiable
+        {
+            private readonly ContinuouslyDifferentiable _f;
+            private readonly double _r;
+
+            public ContinuouslyDifferentiableExponentiation(ContinuouslyDifferentiable f, double r)
+            {
+                _f = f;
+                _r = r;
+            }
+
+            public override double Derivative(double x)
+            {
+                return _r * Math.Pow(_f.Value(x), _r - 1);
+            }
+
+            public override double Value(double x)
+            {
+                return Math.Pow(_f.Value(x), _r);
+            }
+        }
+
+        private class ContinuouslyDifferentiablePowerRule : ContinuouslyDifferentiable
+        {
+            private readonly ContinuouslyDifferentiable _f;
+            private readonly ContinuouslyDifferentiable _g;
+
+            public ContinuouslyDifferentiablePowerRule(ContinuouslyDifferentiable f, ContinuouslyDifferentiable g)
+            {
+                _f = f;
+                _g = g;
+            }
+
+            public override double Derivative(double x)
+            {
+                var f = _f.Value(x);
+                if (f <= 0)
+                {
+                    return double.NaN;
+                }
+                return Value(x) * (_f.Derivative(x) * _g.Value(x) / f + _g.Derivative(x) * Math.Log(f));
+            }
+
+            public override double Value(double x)
+            {
+                return Math.Pow(_f.Value(x), _g.Value(x));
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿// <copyright file="FiniteDifferenceCoefficientTests.cs" company="Math.NET">
+﻿// <copyright file="ContinuouslyDifferentiableTests.cs" company="Math.NET">
 // Math.NET Numerics, part of the Math.NET Project
 // http://numerics.mathdotnet.com
 // http://github.com/mathnet/mathnet-numerics
@@ -34,24 +34,102 @@ using NUnit.Framework;
 namespace MathNet.Numerics.Tests.DifferentiationTests
 {
     [TestFixture, Category("Differentiation")]
-    public class ContinuouslyDifferentiableTest
+    public class ContinuouslyDifferentiableTests
     {
         private ContinuouslyDifferentiable sin = new Sin();
         private ContinuouslyDifferentiable cos = new Cos();
+        private ContinuouslyDifferentiable linear = new X();
+
+        [Test]
+        public void ContinuouslyDifferentiableScalarMultiplyTest()
+        {
+            var a = 3.2;
+            var scalarMultiplication = a * sin;
+            var x = 0.1;
+            Assert.AreEqual(a * Math.Sin(x), scalarMultiplication.Value(x));
+            Assert.AreEqual(a * Math.Cos(x), scalarMultiplication.Derivative(x));
+        }
+
+        [Test]
+        public void ContinuouslyDifferentiableUnaryMinusTest()
+        {
+            var unaryMinus = -sin;
+            var x = 0.1;
+            Assert.AreEqual(-Math.Sin(x), unaryMinus.Value(x));
+            Assert.AreEqual(-Math.Cos(x), unaryMinus.Derivative(x));
+        }
 
         [Test]
         public void ContinuouslyDifferentiableAdditionTest()
         {
             var addition = sin + cos;
-            Assert.AreEqual(1.094837581924854, addition.Value(0.1));
+            var x = 0.1;
+            Assert.AreEqual(Math.Sin(x) + Math.Cos(x), addition.Value(x));
+            Assert.AreEqual(Math.Cos(x) - Math.Sin(x), addition.Derivative(x));
+        }
+
+        [Test]
+        public void ContinuouslyDifferentiableSubtractionTest()
+        {
+            var subtraction = sin - cos;
+            var x = 0.1;
+            Assert.AreEqual(Math.Sin(x) - Math.Cos(x), subtraction.Value(x));
+            Assert.AreEqual(Math.Cos(x) + Math.Sin(x), subtraction.Derivative(x));
+        }
+
+        [Test]
+        public void ContinuouslyDifferentiableMultiplicationTest()
+        {
+            var multiplication = sin * cos;
+            var x = 0.1;
+            Assert.AreEqual(Math.Sin(x) * Math.Cos(x), multiplication.Value(x));
+            Assert.AreEqual(Math.Cos(x) * Math.Cos(x) - Math.Sin(x) * Math.Sin(x), multiplication.Derivative(x));
+        }
+
+        [Test]
+        public void ContinuouslyDifferentiableDivisionTest()
+        {
+            var division = sin / cos;
+            var x = 0.1;
+            Assert.AreEqual(Math.Tan(x), division.Value(x));
+            Assert.AreEqual(2 / (Math.Cos(2 * x) + 1), division.Derivative(x));
         }
 
         [Test]
         public void ContinuouslyDifferentiableCompositionTest()
         {
             var f = sin[cos];
-            Assert.AreEqual(0.81650805329435794, f.Value(0.3));
-            Assert.AreEqual(-0.17061387613475204, f.Derivative(0.3));
+            var x = 0.3;
+            Assert.AreEqual(Math.Sin(Math.Cos(x)), f.Value(x));
+            Assert.AreEqual(-Math.Sin(x) * (Math.Cos(Math.Cos(x))), f.Derivative(x));
+        }
+
+        [Test]
+        public void ContinuouslyDifferentiableExponentiationTest()
+        {
+            var r = 3.2;
+            var f = sin ^ r;
+            var x = 0.2;
+            Assert.AreEqual(Math.Pow(Math.Sin(x), r), f.Value(x));
+            Assert.AreEqual(r * Math.Pow(Math.Sin(x), r - 1), f.Derivative(x));
+        }
+
+        [Test]
+        public void ContinuouslyDifferentiableInverseTest()
+        {
+            var f = linear ^ (-1);
+            var x = 0.2;
+            Assert.AreEqual(1 / x, f.Value(x));
+            Assert.AreEqual(-1 / (x * x), f.Derivative(x));
+        }
+
+        [Test]
+        public void ContinuouslyDifferentiableGeneralizedPowerRuleTest()
+        {
+            var f = sin ^ cos;
+            var x = 0.2;
+            Assert.AreEqual(Math.Pow(Math.Sin(x), Math.Cos(x)), f.Value(x));
+            Assert.AreEqual(1.0578530168324183, f.Derivative(x));
         }
     }
 
@@ -78,6 +156,19 @@ namespace MathNet.Numerics.Tests.DifferentiationTests
         public override double Value(double x)
         {
             return Math.Cos(x);
+        }
+    }
+
+    public class X : ContinuouslyDifferentiable
+    {
+        public override double Derivative(double x)
+        {
+            return 1;
+        }
+
+        public override double Value(double x)
+        {
+            return x;
         }
     }
 }
