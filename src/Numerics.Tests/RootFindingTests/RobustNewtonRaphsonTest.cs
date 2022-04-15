@@ -128,22 +128,12 @@ namespace MathNet.Numerics.Tests.RootFindingTests
         [Test]
         public void PolynomialMaximaSearchLowAccuracy()
         {
-            var roots = new double[] { 20, 80, 120, 150, 190 };
-            var polynomial = roots
-                .Select(r => new Polynomial(-r, 1))
-                .Aggregate(Polynomial.Multiply);
-
-            var polynomialFirstDerivative = polynomial.Differentiate();
-            var polynomialSecondDerivative = polynomialFirstDerivative.Differentiate();
-
-            Func<double, double> f = x => polynomial.Evaluate(x);
-            Func<double, double> df = x => polynomialFirstDerivative.Evaluate(x);
-            Func<double, double> ddf = x => polynomialSecondDerivative.Evaluate(x);
+            var testPolynomial = new TestPolynomial();
 
             var abscissaAtMaximum = FindAll(
-                f: f,
-                df: df,
-                ddf: ddf,
+                f: testPolynomial.f,
+                df: testPolynomial.df,
+                ddf: testPolynomial.ddf,
                 x0: 0,
                 x1: 200,
                 delta: 1e-6)
@@ -151,31 +141,18 @@ namespace MathNet.Numerics.Tests.RootFindingTests
                 .Select(r => r.X)
                 .ToArray();
 
-            Assert.AreEqual(2, abscissaAtMaximum.Length);
-
-            Assert.AreEqual(39.0727, abscissaAtMaximum[0], 0.0005);
-            Assert.AreEqual(135.9004, abscissaAtMaximum[1], 0.0005);
+            testPolynomial.AssertMaxima(abscissaAtMaximum);
         }
 
         [Test]
         public void PolynomialMaximaSearchHighAccuracy()
         {
-            var roots = new double[] { 20, 80, 120, 150, 190 };
-            var polynomial = roots
-                .Select(r => new Polynomial(-r, 1))
-                .Aggregate(Polynomial.Multiply);
-
-            var polynomialFirstDerivative = polynomial.Differentiate();
-            var polynomialSecondDerivative = polynomialFirstDerivative.Differentiate();
-
-            Func<double, double> f = x => polynomial.Evaluate(x);
-            Func<double, double> df = x => polynomialFirstDerivative.Evaluate(x);
-            Func<double, double> ddf = x => polynomialSecondDerivative.Evaluate(x);
+            var testPolynomial = new TestPolynomial();
 
             var abscissaAtMaximum = FindAll(
-                f: f,
-                df: df,
-                ddf: ddf,
+                f: testPolynomial.f,
+                df: testPolynomial.df,
+                ddf: testPolynomial.ddf,
                 x0: 0,
                 x1: 200,
                 delta: 1e-8)
@@ -183,10 +160,36 @@ namespace MathNet.Numerics.Tests.RootFindingTests
                 .Select(r => r.X)
                 .ToArray();
 
-            Assert.AreEqual(2, abscissaAtMaximum.Length);
+            testPolynomial.AssertMaxima(abscissaAtMaximum);
+        }
 
-            Assert.AreEqual(39.0727, abscissaAtMaximum[0], 0.0005);
-            Assert.AreEqual(135.9004, abscissaAtMaximum[1], 0.0005);
+        private class TestPolynomial
+        {
+            public TestPolynomial()
+            {
+                var roots = new double[] { 20, 80, 120, 150, 190 };
+                var polynomial = roots
+                    .Select(r => new Polynomial(-r, 1))
+                    .Aggregate(Polynomial.Multiply);
+
+                var polynomialFirstDerivative = polynomial.Differentiate();
+                var polynomialSecondDerivative = polynomialFirstDerivative.Differentiate();
+
+                f = x => polynomial.Evaluate(x);
+                df = x => polynomialFirstDerivative.Evaluate(x);
+                ddf = x => polynomialSecondDerivative.Evaluate(x);
+            }
+
+            public Func<double, double> f { get; }
+            public Func<double, double> df { get; }
+            public Func<double, double> ddf { get; }
+
+            public void AssertMaxima(double[] abscissaAtMaximum)
+            {
+                Assert.AreEqual(2, abscissaAtMaximum.Length);
+                Assert.AreEqual(39.0727, abscissaAtMaximum[0], 0.0005);
+                Assert.AreEqual(135.9004, abscissaAtMaximum[1], 0.0005);
+            }
         }
     }
 }
