@@ -28,10 +28,8 @@
 // </copyright>
 
 using System;
-using System.Linq;
 using MathNet.Numerics.RootFinding;
 using NUnit.Framework;
-using static Analysis.Extrema;
 
 namespace MathNet.Numerics.Tests.RootFindingTests
 {
@@ -116,31 +114,6 @@ namespace MathNet.Numerics.Tests.RootFindingTests
             Func<double, double> f1 = x => x * x + 4;
             Func<double, double> df1 = x => 2 * x;
             Assert.That(() => NewtonRaphson.FindRoot(f1, df1, -5, 5, 1e-14, 50), Throws.TypeOf<NonConvergenceException>());
-        }
-
-        [Test]
-        public void TestMaximaSearch()
-        {
-            var roots = new double[] { 20, 80, 120, 150, 190 };
-            var f = roots
-                .Select(r => new Polynomial(-r, 1))
-                .Aggregate(Polynomial.Multiply);
-
-            var result = FindAll(
-                ys: Enumerable.Range(0, 2000).Select(x => f.Evaluate(x / 10d)).ToArray(),
-                x0: 0,
-                x1: 200)
-                .OfType<Maxima>()
-                .Select(r => r.X)
-                .ToArray();
-
-            Assert.AreEqual(2, result.Length);
-
-            Assert.AreEqual(39.073d, result[0], 0.5d);
-            Assert.AreEqual(135.9d, result[1], 0.5d);
-
-            Console.WriteLine($"x0 Ist: {result[0]:f4}; Soll: 39.0730");
-            Console.WriteLine($"x1 Ist: {result[1]:f4}; Soll: 135.9000");
         }
     }
 }
