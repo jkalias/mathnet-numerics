@@ -143,8 +143,8 @@ namespace MathNet.Numerics.Tests.RootFindingTests
 
             Assert.AreEqual(2, abscissaAtMaximum.Length);
 
-            Assert.AreEqual(39.059, abscissaAtMaximum[0], 0.005);
-            Assert.AreEqual(135.903, abscissaAtMaximum[1], 0.005);
+            Assert.AreEqual(39.0727, abscissaAtMaximum[0], 0.0005);
+            Assert.AreEqual(135.9004, abscissaAtMaximum[1], 0.0005);
         }
     }
 }

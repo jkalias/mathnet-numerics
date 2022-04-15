@@ -10,10 +10,10 @@ namespace MathNet.Numerics.Tests.RootFindingTests
 {
     public abstract class Extrema
 	{
-		private static readonly NumericalDerivative derivative = Differentiate.Points(6, 3);
+		private static readonly NumericalDerivative derivative = Differentiate.Points(8, 4);
 		private const int INTERVAL_COUNT = 20;
 		private const int MAX_ITTERATIONS = 50;
-		private const double DELTA = 1e-8;
+		private const double DELTA = 1e-6;
 
 		private Extrema(double x, double y)
 		{
