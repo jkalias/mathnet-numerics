@@ -126,17 +126,59 @@ namespace MathNet.Numerics.Tests.RootFindingTests
         }
 
         [Test]
-        public void MaximaSearch()
+        public void PolynomialMaximaSearchLowAccuracy()
         {
             var roots = new double[] { 20, 80, 120, 150, 190 };
-            var f = roots
+            var polynomial = roots
                 .Select(r => new Polynomial(-r, 1))
                 .Aggregate(Polynomial.Multiply);
 
+            var polynomialFirstDerivative = polynomial.Differentiate();
+            var polynomialSecondDerivative = polynomialFirstDerivative.Differentiate();
+
+            Func<double, double> f = x => polynomial.Evaluate(x);
+            Func<double, double> df = x => polynomialFirstDerivative.Evaluate(x);
+            Func<double, double> ddf = x => polynomialSecondDerivative.Evaluate(x);
+
             var abscissaAtMaximum = FindAll(
-                ys: Enumerable.Range(0, 2000).Select(x => f.Evaluate(x / 10d)).ToArray(),
+                f: f,
+                df: df,
+                ddf: ddf,
                 x0: 0,
-                x1: 200)
+                x1: 200,
+                delta: 1e-6)
+                .OfType<Maxima>()
+                .Select(r => r.X)
+                .ToArray();
+
+            Assert.AreEqual(2, abscissaAtMaximum.Length);
+
+            Assert.AreEqual(39.0727, abscissaAtMaximum[0], 0.0005);
+            Assert.AreEqual(135.9004, abscissaAtMaximum[1], 0.0005);
+        }
+
+        [Test]
+        public void PolynomialMaximaSearchHighAccuracy()
+        {
+            var roots = new double[] { 20, 80, 120, 150, 190 };
+            var polynomial = roots
+                .Select(r => new Polynomial(-r, 1))
+                .Aggregate(Polynomial.Multiply);
+
+            var polynomialFirstDerivative = polynomial.Differentiate();
+            var polynomialSecondDerivative = polynomialFirstDerivative.Differentiate();
+
+            Func<double, double> f = x => polynomial.Evaluate(x);
+            Func<double, double> df = x => polynomialFirstDerivative.Evaluate(x);
+            Func<double, double> ddf = x => polynomialSecondDerivative.Evaluate(x);
+
+            var abscissaAtMaximum = FindAll(
+                f: f,
+                df: df,
+                ddf: ddf,
+                x0: 0,
+                x1: 200,
+                delta: 1e-8)
                 .OfType<Maxima>()
                 .Select(r => r.X)
                 .ToArray();

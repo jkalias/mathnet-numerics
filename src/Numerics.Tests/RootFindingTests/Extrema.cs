@@ -1,19 +1,14 @@
-﻿using MathNet.Numerics.Differentiation;
-using MathNet.Numerics.Interpolation;
-using MathNet.Numerics.RootFinding;
+﻿using MathNet.Numerics.RootFinding;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-
 
 namespace MathNet.Numerics.Tests.RootFindingTests
 {
     public abstract class Extrema
 	{
-		private static readonly NumericalDerivative derivative = Differentiate.Points(8, 4);
 		private const int INTERVAL_COUNT = 20;
 		private const int MAX_ITTERATIONS = 50;
-		private const double DELTA = 1e-6;
+		private const double DELTA = 1e-8;
 
 		private Extrema(double x, double y)
 		{
@@ -34,38 +29,15 @@ namespace MathNet.Numerics.Tests.RootFindingTests
 			public Maxima(double x, double y) : base(x, y) { }
 		}
 
-        public static IEnumerable<Extrema> FindAll(
-            double[] ys,
-			double x0 = 0,
-            double x1 = 1,
-			int intervalCount = INTERVAL_COUNT,
-			double delta = DELTA,
-			NumericalDerivative derivative = null)
-		{
-			var dx = (x1 - x0) / ys.Length;
-
-			var xs = ys.Select((y, i) => x0 + i * dx).ToArray();
-
-			IInterpolation spline = LinearSpline.Interpolate(xs, ys);
-
-			return FindAll(spline, x0, x1, intervalCount: intervalCount, delta: delta, derivative);
-		}
-
 		public static IEnumerable<Extrema> FindAll(
-			IInterpolation spline,
+			Func<double, double> f,
+			Func<double, double> df,
+			Func<double, double> ddf,
 			double x0,
 			double x1,
 			int intervalCount = INTERVAL_COUNT,
-			double delta = DELTA,
-			NumericalDerivative derivative = null
-			)
+			double delta = DELTA)
 		{
-			derivative = derivative ?? Extrema.derivative;
-
-			Func<double, double> f = spline.Interpolate;
-			var df = derivative.CreateDerivativeFunctionHandle(spline.Interpolate, 1);
-			var ddf = derivative.CreateDerivativeFunctionHandle(spline.Interpolate, 2);
-
 			var intervalSize = (x1 - x0) / intervalCount;
 
 			var x = x0;
