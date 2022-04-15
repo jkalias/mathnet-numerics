@@ -31,7 +31,7 @@ using System;
 using System.Linq;
 using MathNet.Numerics.RootFinding;
 using NUnit.Framework;
-using static Analysis.Extrema;
+using static MathNet.Numerics.Tests.RootFindingTests.Extrema;
 
 namespace MathNet.Numerics.Tests.RootFindingTests
 {
@@ -133,7 +133,7 @@ namespace MathNet.Numerics.Tests.RootFindingTests
                 .Select(r => new Polynomial(-r, 1))
                 .Aggregate(Polynomial.Multiply);
 
-            var result = FindAll(
+            var abscissaAtMaximum = FindAll(
                 ys: Enumerable.Range(0, 2000).Select(x => f.Evaluate(x / 10d)).ToArray(),
                 x0: 0,
                 x1: 200)
@@ -141,13 +141,10 @@ namespace MathNet.Numerics.Tests.RootFindingTests
                 .Select(r => r.X)
                 .ToArray();
 
-            Assert.AreEqual(2, result.Length);
+            Assert.AreEqual(2, abscissaAtMaximum.Length);
 
-            Assert.AreEqual(39.073d, result[0], 0.5d);
-            Assert.AreEqual(135.9d, result[1], 0.5d);
-
-            Console.WriteLine($"x0 Ist: {result[0]:f4}; Soll: 39.0730");
-            Console.WriteLine($"x1 Ist: {result[1]:f4}; Soll: 135.9000");
+            Assert.AreEqual(39.059, abscissaAtMaximum[0], 0.005);
+            Assert.AreEqual(135.903, abscissaAtMaximum[1], 0.005);
         }
     }
 }
